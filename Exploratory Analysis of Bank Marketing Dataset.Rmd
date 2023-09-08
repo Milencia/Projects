@@ -1,0 +1,202 @@
+---
+title: "Exploratory Analysis of Bank Marketing Dataset"
+author: "Milencia Saintus"
+date: "2023-09-06"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Bank Marketing Dataset Exploratory Data Analysis Report
+## Introduction
+**This report presents an Exploratory Data Analysis (EDA) of the Bank Marketing dataset. The dataset contains information related to a marketing campaign conducted by a bank, with the goal of predicting whether a client will subscribe to a term deposit ("yes" or "no"). The analysis aims to gain insights into the dataset's structure, understand variable distributions, and identify potential relationships among features.**
+
+
+## Libraries Used
+**To perform the analysis, the following R libraries were loaded:**
+```{r}
+# Load the necessary libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(reshape2)
+```
+
+
+## Data Loading and Inspection
+**The dataset was loaded using the read.csv function, and its structure and summary statistics were examined to understand its characteristics.**
+```{r}
+# Load the data
+bank_data <- read.csv("/Users/milenciasaintus/Downloads/bank-additional-full.csv")
+
+```
+
+## Structure of the Dataset
+**The structure of the dataset was examined to understand the types of variables and their dimensions. Summary statistics were computed for both numeric and categorical variables to gain an overview of their distributions.**
+```{r}
+# Examine the structure of the dataset
+str(bank_data)
+
+# Explore summary statistics
+summary(bank_data)
+```
+
+## Data Preprocessing
+**To facilitate the analysis, strings were converted to factors in the dataset.**
+```{r}
+# Convert strings to factors
+bankdata = read.csv("/Users/milenciasaintus/Downloads/bank-additional-full.csv", stringsAsFactors = T, sep = ";")
+
+head(bankdata)
+```
+
+
+```{r}
+# Examine the structure of the new dataset
+str(bankdata)
+
+# Explore summary statistics
+summary(bankdata)
+```
+
+## Data Visualization
+**Visualizations were created to better understand the distribution and relationships among variables in the dataset.**
+
+## Numeric Variables
+**Summary statistics for numeric variables were displayed, and a histogram of the "Age" variable was created.**
+```{r}
+# Summary statistics for numeric variables
+summary(bankdata[, sapply(bankdata, is.numeric)])
+
+# Summary statistics for categorical variables
+summary(bankdata[, sapply(bankdata, is.factor)])
+
+# Histogram of Age
+ggplot(data = bankdata, aes(x = age)) +
+  geom_histogram(binwidth = 5, fill = "skyblue", color = "black") +
+  labs(title = "Distribution of Age", x = "Age")
+
+# Bar plot of Job distribution
+ggplot(data = bankdata, aes(x = job, fill = job)) +
+  geom_bar() +
+  labs(title = "Distribution of Job Types", x = "Job") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Relationships and Patterns
+**Box plots were used to explore the distribution of "Age" by "Education Level," and a correlation heatmap was created for numeric variables to identify potential relationships.**
+```{r}
+# Box plot of Age by Education level
+ggplot(data = bankdata, aes(x = education, y = age, fill = education)) +
+  geom_boxplot() +
+  labs(title = "Age Distribution by Education Level", x = "Education Level", y = "Age") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels
+        axis.text = element_text(size = 10))  # Adjust text size
+```
+
+## Age Distribution by Education Level (Box Plot)
+**The box plot provides a visual representation of the distribution of ages among different education levels. Each box represents a specific education category, and the plot helps us understand how age varies within each category.**
+
+*Box: The box represents the interquartile range (IQR), which includes the middle 50% of the data. The length of the box shows the spread of ages within each education level. The larger the box, the wider the age range.
+
+* Median Line: The line inside each box represents the median age for that education level. It gives us the central tendency of ages within the group.
+
+* Whiskers: The lines extending from the boxes, known as whiskers, show the range of ages that fall within a defined limit. Any data points outside the whiskers are considered outliers and are plotted individually as points.
+
+* Outliers: Outliers, represented as individual points outside the whiskers, are data points that significantly deviate from the typical age distribution within an education level.
+
+## Observations from the Box Plot:
+
+* For clients with a "basic.4y" education level, the median age is approximately 45, with a relatively narrow age range (smaller IQR).
+* Clients with "illiterate" education levels have a smaller sample size, as indicated by the short whiskers, but their median age is around 45.
+* Clients with "university.degree" education levels have a broader age distribution, with a larger IQR and more outliers.
+
+```{r}
+# Correlation heatmap for numeric variables
+numeric_vars <- bankdata %>%
+  select_if(is.numeric)
+correlation_matrix <- cor(numeric_vars)
+ggplot(data = melt(correlation_matrix), aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  labs(title = "Correlation Heatmap for Numeric Variables") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis
+```
+
+## Correlation Analysis
+
+*Heatmap of Numeric Variable Correlations*
+
+
+**To better understand the relationships between numeric variables in the dataset, a correlation heatmap was generated. The heatmap visualizes the pairwise correlations between these variables. Key insights from the heatmap analysis include:**
+
+1. Low Correlation: The heatmap reveals that most numeric variables exhibit low or no significant linear correlations with each other. This suggests that these variables are generally independent, which is an important consideration when building predictive models.
+
+2. No Strong Multicollinearity: The absence of strong positive or negative correlations (close to 1 or -1) indicates that multicollinearity is not a significant issue among numeric features. This is favorable for model stability.
+
+3. Insight into Potential Predictors: While strong correlations were not observed between numeric features, further analyses can explore the relationship between these variables and the target variable ('y') to identify potential predictors.
+
+**In summary, the correlation heatmap provides an initial understanding of how numeric variables in the dataset are related to each other. It suggests that these variables can be considered as independent features for subsequent modeling and analysis.**
+
+
+## Target Variable Exploration and Multivariate Analysis
+**The target variable "y," which represents whether a client subscribed to a term deposit, was explored using visualizations. A bar plot was created to visualize the distribution of the target variable "y." To explore potential relationships among variables, a pair plot was generated for numeric variables, and a count plot was created for the "poutcome" variable.**
+```{r}
+# Bar plot of the target variable 'y'
+ggplot(data = bankdata, aes(x = y, fill = y)) +
+  geom_bar() +
+  labs(title = "Distribution of the Target Variable", x = "y (Term Deposit)") 
+
+# Pair plot for numeric variables
+library(GGally)
+ggpairs(numeric_vars)
+
+# Count plot of the 'poutcome' variable
+ggplot(data = bankdata, aes(x = poutcome, fill = poutcome)) +
+  geom_bar() +
+  labs(title = "Distribution of Previous Marketing Outcome", x = "Previous Outcome") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+**To explore the correlations between different job types and subscriptions to term deposits, we can conduct a more detailed analysis. In the Bank Marketing dataset, the "job" variable represents the type of job or occupation of the clients, and the target variable "y" indicates whether a client subscribed to a term deposit (with values "yes" or "no").**
+
+**Here are some steps we can take to investigate the correlations:**
+
+1. Count the Subscriptions by Job Type: Calculate the number of subscriptions ("yes") and non-subscriptions ("no") for each job type. This will give us an overview of how different job types are associated with term deposit subscriptions.
+
+2. Calculate Subscription Rates: Compute the subscription rate for each job type. This rate is the proportion of clients with a specific job type who subscribed to term deposits. It helps us understand which job types have higher or lower subscription rates.
+
+3. Visualize the Data: Create visualizations to better understand the relationships. A bar plot or grouped bar plot can be used to display the subscription rates by job type. This allows us to see the differences graphically.
+
+
+```{r}
+# Count subscriptions by job type
+subscription_counts <- bankdata %>%
+  group_by(job, y) %>%
+  summarize(count = n()) %>%
+  pivot_wider(names_from = y, values_from = count, names_prefix = "count_")
+
+# Calculate subscription rates
+subscription_counts <- subscription_counts %>%
+  mutate(subscription_rate = count_yes / (count_yes + count_no))
+
+# Sort by subscription rate
+subscription_counts <- subscription_counts %>%
+  arrange(desc(subscription_rate))
+
+# Create a bar plot of subscription rates by job type
+ggplot(data = subscription_counts, aes(x = reorder(job, -subscription_rate), y = subscription_rate)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(title = "Subscription Rates by Job Type", x = "Job Type", y = "Subscription Rate") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+## Conclusion
+**This EDA provides an initial understanding of the Bank Marketing dataset. Further analyses and machine learning models can be developed to predict subscription outcomes and identify important features influencing client decisions.** 
+
+
+
